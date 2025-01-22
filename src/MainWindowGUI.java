@@ -483,12 +483,12 @@ public class MainWindowGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     private void jMenu2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu2ActionPerformed
-        String Message = "Dibuat oleh Agusalim" + '\n' + "Indonesian Plate Recognition Beta V.5.0";
+        String Message = "Dibuat oleh Leo Lie" + '\n' + "Indonesian Plate Recognition Beta V.5.0";
         JOptionPane.showMessageDialog(this, Message);
     }//GEN-LAST:event_jMenu2ActionPerformed
 
     private void jMenu2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jMenu2MouseClicked
-        String Message = "Dibuat oleh Agusalim" + '\n' + "NIM : 11420561" + '\n' + "Indonesian Plate Recognition Beta V.5.0";
+        String Message = "Dibuat oleh Leo Lie" + '\n' + "Indonesian Plate Recognition Beta V.5.0";
         JOptionPane.showMessageDialog(this, Message);
     }//GEN-LAST:event_jMenu2MouseClicked
 
