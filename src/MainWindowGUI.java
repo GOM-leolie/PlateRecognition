@@ -440,7 +440,9 @@ public class MainWindowGUI extends javax.swing.JFrame {
         if (img_src_output.getIcon() != null)
             btn_resetActionPerformed(evt);
         
-        JFileChooser fileChooser = new JFileChooser();
+        String currPath = Paths.get("").toAbsolutePath().toString();
+        
+        JFileChooser fileChooser = new JFileChooser(currPath);
         int returnValue = fileChooser.showOpenDialog(this);
         File ImageLocation = null;
         
@@ -841,12 +843,12 @@ public class MainWindowGUI extends javax.swing.JFrame {
         
         if (proc_blobbing.isSelected())
         {           
-            label = ImageProcessing.Blobbing(sobel);
-            ImageProcessing.LabelCounting(label, exist);
-            ImageProcessing.LabelElimination(label, exist);
+            label = FeatureExtraction.Blobbing(sobel);
+            ObjectClassification.LabelCounting(label, exist);
+            ObjectClassification.LabelElimination(label, exist);
             
             if (exist.size() > 13)
-                ImageProcessing.LabelElimination(label, exist);
+                ObjectClassification.LabelElimination(label, exist);
             
             final int[][] label2 = new int[label.length][label[0].length];
             
@@ -900,7 +902,7 @@ public class MainWindowGUI extends javax.swing.JFrame {
         
         if (proc_image_split.isSelected())
         {
-            ImageProcessing.ImageSplit(tempPixel, imagePixelCopy, label, exist, imageBlob, imageSobel, imageGreyscale);
+            ObjectClassification.ImageSplit(tempPixel, imagePixelCopy, label, exist, imageBlob, imageSobel, imageGreyscale);
             model.removeAllElements();
             
             for (int i = 0 ; i < imageBlob.size() ; i++)
@@ -951,7 +953,7 @@ public class MainWindowGUI extends javax.swing.JFrame {
             for (int i = 0 ; i < imageSobel.size() ; i++)
             {
                String tempName;
-               tempName = ImageProcessing.ImageClassification(imageBlob, imageSobel, imageGreyscale, tempPixel.length, tempPixel[0].length, i);
+               tempName = ObjectClassification.ImageClassification(imageBlob, imageSobel, imageGreyscale, tempPixel.length, tempPixel[0].length, i);
                name.add(tempName);
                
                if (!tempName.equals("Unidentified") && (!tempName.equals("")))
