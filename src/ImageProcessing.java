@@ -1,7 +1,85 @@
 import java.util.*;
 
 public class ImageProcessing
-{    
+        implements IImageProcessing
+{
+    public static void main(String[] args)
+    {
+        String path = "C:\\Users\\leo\\Desktop\\Plate-example.jpg";
+        int[][][] imagePixels = ReadWritePNG.ReadPNG(path);
+        
+        IImageProcessing imageProcessing = new ImageProcessing();
+        int[][] result = imageProcessing.generateIntensityHistogram(imagePixels);
+        
+        for (int i = 0 ; i < result.length ; i++)
+        {
+            String colour = "";
+            
+            switch (i)
+            {
+                case 0 -> colour = "Red";
+                case 1 -> colour = "Green";
+                case 2 -> colour = "Blue";
+            }
+            
+            System.out.println(colour);           
+            
+            for (int j = 0 ; j < 256 ; j++)
+            {
+                int pixelCount = result[i][j];
+                if (pixelCount > 0)
+                    System.out.println(j + ": " + pixelCount);
+            }
+            
+            try{
+                System.in.read();
+            }
+            catch (Exception e)
+            {
+            }
+        }
+    }
+     
+    @Override
+    public int[][] generateIntensityHistogram(int[][][] imagePixels)
+    {
+        /*Declaring a historgram to store the count of rgb colours*/
+        int[][] resultHistogram = new int[3][256];
+        
+        /*Initialising Histogram*/
+        for (int i = 0 ; i < 3 ; i ++)
+            for (int j = 0 ; j < 256 ; j++)
+                resultHistogram [i][j] = 0;
+        
+        try
+        {
+            /*Iterating through each colour pixel to generate historgram*/
+            for (int[][] width : imagePixels)
+            {
+                for (int[] height : width)
+                {
+                    if (height.length == 3)
+                    {
+                        int red = height[0];
+                        int green = height[1];
+                        int blue = height[2];
+                        
+                        resultHistogram[0][red]++;
+                        resultHistogram[1][green]++;
+                        resultHistogram[2][blue]++;                        
+                    }
+                    
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception raised - generate intensity histogram: " + e.getMessage());
+        }        
+        
+        return resultHistogram;
+    }
+    
    /*Image processing technique to remove background noise by 
     differentiating the colour. 
     Any pixel above threshold will be changed to white, otherwise black.*/

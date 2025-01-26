@@ -12,7 +12,7 @@ import java.util.ArrayList;
  */
 public class FeatureExtraction {
     public static int[][] Blobbing(int[][][] ImagePixel)
-   {
+   {       
       /*Deklarasi variable*/
    	  /*ImageLabel adalah array yang menampung pixel-pixel yang telah terlabel setelah di blobbing*/
    	  /*CurrentLabel adalah variable untuk menyimpan label yang akan digunakan selanjutnya*/
