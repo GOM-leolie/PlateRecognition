@@ -9,50 +9,94 @@ import java.util.LinkedList;
  */
 public class HistogramUI {
     
-    static int[] initHistogramData(int[] histogramData)
+    int maxValue;
+    int medianValue;
+    int totalBin;
+    int totalData;
+    int[] histogramData;
+    
+    HistogramBin[] histogramBins;
+    
+    public static void showHistogram(int[] newHistogramData, int newTotalBin)
+    {
+        JFrame newFrame = new JFrame();
+        newFrame.setSize(800, 500);
+        newFrame.setLocation(100, 100);
+        
+        HistogramUI newUI = new HistogramUI(new int[0], 9);
+        JPanel histogram = newUI.drawHistogram(newFrame.getWidth(), newFrame.getHeight());
+        
+        newFrame.add(histogram);
+        newFrame.setVisible(true);
+    }
+    
+    public HistogramUI(int[] newHistogramData, int newTotalBin)
+    {
+        histogramData = newHistogramData;
+        totalBin = newTotalBin;
+     
+        initHistogramData(histogramData);
+        
+        findMedianAndMaxValue();
+        generateHistogramBin();
+    }
+    
+    private void findMedianAndMaxValue()
+    {
+        totalData = histogramData.length;
+        int medianIndex = 0;
+        
+        if (totalData % 2 == 0)
+            medianIndex = (totalData - 1) / 2;
+        else
+            medianIndex = totalData / 2;
+            
+        int[] histogramDataDuplicate = new int[totalData];
+        System.arraycopy(histogramData, 0, histogramDataDuplicate, 0, totalData);      
+        Arrays.sort(histogramDataDuplicate);
+        
+        maxValue = histogramDataDuplicate[totalData - 1];
+        medianValue = histogramDataDuplicate[medianIndex];
+    }
+    
+    private void generateHistogramBin()
+    {
+        int binSize = (int) Math.ceil((double)totalData/(double)totalBin);
+        histogramBins = new HistogramBin[totalBin];
+                
+        int indexCounter = 0;
+        for (int i = 0 ; i < totalData ; i += binSize)
+        {
+            String binCaption = Integer.toString(i) + " to " + Integer.toString(i + binSize - 1);
+            int binValue = 0;
+            
+            for (int j = i ; j < i + binSize ; j++)
+                if (j < totalData)
+                    binValue += histogramData[j];
+            
+            HistogramBin newBin = new HistogramBin(binValue, binCaption);
+            histogramBins[indexCounter] = newBin;
+            
+            indexCounter++;
+        }
+        
+        //for (HistogramBin bin : histogramBins)
+            //System.out.println(bin.caption + ": " + bin.value);
+    }
+    
+    /*Test Only Function*/
+    private void initHistogramData(int[] histogramData)
     {
         histogramData = new int[200];
         
         for (int i = 0 ; i < 200 ; i++)
             histogramData[i] = (int) Math.floor(Math.random() * 100);
         
-        return histogramData;
+        this.histogramData = histogramData;
     }
     
-    public static HistogramBin[] initialiseHistogram(int[] histogramData, int totalBin)
-    {
-        histogramData = initHistogramData(histogramData);
-        totalBin = 9;        
-                
-        int binSize = (int) Math.ceil((double)histogramData.length/(double)totalBin);
-        HistogramBin[] bins = new HistogramBin[totalBin];
-                
-        int indexCounter = 0;
-        for (int i = 0 ; i < histogramData.length ; i += binSize)
-        {
-            String binCaption = Integer.toString(i) + " to " + Integer.toString(i + binSize - 1);
-            int binValue = 0;
-            
-            for (int j = i ; j < i + binSize ; j++)
-                if (j < histogramData.length)
-                    binValue += histogramData[j];
-            
-            HistogramBin newBin = new HistogramBin(binValue, binCaption);
-            bins[indexCounter] = newBin;
-            
-            indexCounter++;
-        }
-        
-        return bins;
-    }
-    
-    static JPanel drawHistogram(int containerWidth, int containerHeight)
-    {
-        int[] histogramData = new int[0];
-        int totalBin = 0;
-        
-        HistogramBin[] bins = initialiseHistogram(histogramData, totalBin);
-        
+    private JPanel drawHistogram(int containerWidth, int containerHeight)
+    {        
         /*Initialise Frame*/
         int frameHeight = (int)(containerHeight * 0.98);
         int frameWidth = (int) (containerWidth * 0.98);
@@ -77,14 +121,12 @@ public class HistogramUI {
         mainFrame.add(yAxis);
         
         /*Draw Bins*/
-        mainFrame = createHistogramBins(bins, axisWidth, axisHeight, xCoordinate, yCoordinate, mainFrame);
-        
-        
+        mainFrame = createHistogramBins(axisWidth, axisHeight, xCoordinate, yCoordinate, mainFrame);
         
         return mainFrame;
     }
     
-    public static JPanel createHistogramFrame(int width, int height, int x, int y)
+    private JPanel createHistogramFrame(int width, int height, int x, int y)
     {        
         /*Draw Frame*/
         JPanel mainFrame = new JPanel();
@@ -101,7 +143,7 @@ public class HistogramUI {
         return mainFrame;
     }
     
-    public static JPanel createAxis(int width, int height, int x, int y)
+    private JPanel createAxis(int width, int height, int x, int y)
     {
         JPanel xAxis = createPanel(width, height, Color.BLACK);
         xAxis.setLocation(x, y);
@@ -109,21 +151,20 @@ public class HistogramUI {
         return xAxis;
     }
         
-    public static JPanel createHistogramBins(HistogramBin[] bins, int axisWidth, int axisHeight, int axisX, int axisY, JPanel basePanel)
+    private JPanel createHistogramBins(int axisWidth, int axisHeight, int axisX, int axisY, JPanel basePanel)
     {        
-        HistogramBin[] copyBins = new HistogramBin[bins.length];
-        System.arraycopy(bins, 0, copyBins, 0, bins.length);
+        /*First pass to find maximum bin value to calculate the bin height*/
+        int maxBinValue = 0;
+        for (HistogramBin bin : histogramBins)
+            if (bin.value > maxBinValue)
+                maxBinValue = bin.value;
         
-        java.util.List<HistogramBin> binArrayList = java.util.Arrays.asList(copyBins);
-        binArrayList.sort(new HistogramBin.BinComparator());
-        
-        int maxValue = binArrayList.getLast().value;
-        int binWidth = (int) ((double)axisWidth/ (double)bins.length) - 10;
-        int x = axisX + 5;
+        int binWidth = (int) ((double)axisWidth/ (double)totalBin) - 10;
+        int x = axisX + 10;
                 
-        for (HistogramBin bin : bins)
+        for (HistogramBin bin : histogramBins)
         {
-            int height = (int) (((double) bin.value/(double) maxValue) * axisHeight); 
+            int height = (int) (((double) bin.value/(double) maxBinValue) * axisHeight); 
             int y = axisY - height;   
             
             JPanel bar = createPanel(binWidth, height, Color.CYAN);        
@@ -135,8 +176,8 @@ public class HistogramUI {
         
         return basePanel;
     }
-        
-    public static JPanel createPanel(int width, int height, Color colour)
+            
+    private JPanel createPanel(int width, int height, Color colour)
     {
         JPanel panel = new JPanel();
         panel.setSize(width, height);
@@ -163,20 +204,5 @@ public class HistogramUI {
         }
 }
         
-    }
-    
-    static class AxisData{
-        public int width;
-        public int height;
-        public int xCoordinate;
-        public int yCoordinate;
-        
-        public AxisData(int newWidth, int newHeight, int newXCoordinate, int newYCoordinate)
-        {
-            width = newWidth;
-            height = newHeight;
-            xCoordinate = newXCoordinate;
-            yCoordinate = newYCoordinate;
-        }
     }
 }
