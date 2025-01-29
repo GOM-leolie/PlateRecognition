@@ -1,119 +1,109 @@
 package Function;
 
-
 import java.util.ArrayList;
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
-/**
- *
- * @author leo
- */
 public class FeatureExtraction {
     public static int[][] Blobbing(int[][][] ImagePixel)
    {       
-      /*Deklarasi variable*/
-   	  /*ImageLabel adalah array yang menampung pixel-pixel yang telah terlabel setelah di blobbing*/
-   	  /*CurrentLabel adalah variable untuk menyimpan label yang akan digunakan selanjutnya*/
-      int[][] ImageLabel;
-      int CurrentLabel;
-      ArrayList<ArrayList<Integer>> ExistingLabel;
+        /*Deklarasi variable*/
+        /*ImageLabel adalah array yang menampung pixel-pixel yang telah terlabel setelah di blobbing*/
+   	/*CurrentLabel adalah variable untuk menyimpan label yang akan digunakan selanjutnya*/
+        int[][] ImageLabel;
+        int CurrentLabel;
+        ArrayList<ArrayList<Integer>> ExistingLabel;
 
-      /*Inisialisasi Variable*/
-      /*ImageLabel diinisialisasi dengan panjang dan lebar sama seperti gambar sumber*/
-      /*Semua label dinisialisasi 0*/
-      /*CurrentLabel diinisialisasi 1*/
-      ImageLabel = new int[ImagePixel.length][ImagePixel[0].length]; 
+        /*Inisialisasi Variable*/
+        /*ImageLabel diinisialisasi dengan panjang dan lebar sama seperti gambar sumber*/
+        /*Semua label dinisialisasi 0*/
+        /*CurrentLabel diinisialisasi 1*/
+        ImageLabel = new int[ImagePixel.length][ImagePixel[0].length]; 
 
-      for (int i = 0 ; i < ImageLabel.length ; i++)
-      	for (int j = 0 ; j < ImageLabel[0].length ; j++)
-      		ImageLabel[i][j] = 0;
+        for (int i = 0 ; i < ImageLabel.length ; i++)
+          for (int j = 0 ; j < ImageLabel[0].length ; j++)
+                  ImageLabel[i][j] = 0;
 
-      CurrentLabel = 1;  
-      ExistingLabel = new ArrayList<ArrayList<Integer>>();
+        CurrentLabel = 1;  
+        ExistingLabel = new ArrayList<ArrayList<Integer>>();
 
-      /*Mengerjakan algoritma blobbing dengan 8-konektivitas*/
-   	  for (int i = 1 ; i < ImagePixel[0].length - 1 ; i++)
-   	  {
-   	     for (int j = 1 ; j < ImagePixel.length - 1 ; j++)
-         {
-         	if ((ImagePixel[j][i][0] > 10) && (ImagePixel[j][i][1] > 10) && (ImagePixel[j][i][2] > 10))
-         	{
-         		if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j-1][i-1] != 0) && (ImageLabel[j][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j-1][i-1] != 0) && (ImageLabel[j][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j-1][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if ((ImageLabel[j-1][i-1] != 0) && (ImageLabel[j][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j-1][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if ((ImageLabel[j][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}       		
-         		else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if ((ImageLabel[j-1][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j+1][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if ((ImageLabel[j-1][i-1] != 0) && (ImageLabel[j][i-1] != 0))
-         		{
-         			LabelProcessing(ImageLabel, j, i, ExistingLabel);
-         		}
-         		else if (ImageLabel[j-1][i] != 0)
-         		{
-         			ImageLabel[j][i] = ImageLabel[j-1][i];
-         		}
-         		else if (ImageLabel[j-1][i-1] != 0)
-         		{
-         			ImageLabel[j][i] = ImageLabel[j-1][i-1];
-         		}
-         		else if (ImageLabel[j][i-1] != 0)
-         		{
-         			ImageLabel[j][i] = ImageLabel[j][i-1];
-         		}
-         		else if (ImageLabel[j+1][i-1] != 0)
-         		{
-         			ImageLabel[j][i] = ImageLabel[j+1][i-1];
-         		}
-         		else
-         		{
-         			ImageLabel[j][i] = CurrentLabel;
-         			CurrentLabel++;
-         		}
-         	}
-         }
-      }
+        /*Mengerjakan algoritma blobbing dengan 8-konektivitas*/
+        for (int i = 1 ; i < ImagePixel[0].length - 1 ; i++)
+        {
+               for (int j = 1 ; j < ImagePixel.length - 1 ; j++)
+           {
+                  if ((ImagePixel[j][i][0] > 10) && (ImagePixel[j][i][1] > 10) && (ImagePixel[j][i][2] > 10))
+                  {
+                          if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j-1][i-1] != 0) && (ImageLabel[j][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j-1][i-1] != 0) && (ImageLabel[j][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j-1][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if ((ImageLabel[j-1][i-1] != 0) && (ImageLabel[j][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j-1][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if ((ImageLabel[j][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }       		
+                          else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if ((ImageLabel[j-1][i-1] != 0) && (ImageLabel[j+1][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if ((ImageLabel[j-1][i] != 0) && (ImageLabel[j+1][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if ((ImageLabel[j-1][i-1] != 0) && (ImageLabel[j][i-1] != 0))
+                          {
+                                  LabelProcessing(ImageLabel, j, i, ExistingLabel);
+                          }
+                          else if (ImageLabel[j-1][i] != 0)
+                          {
+                                  ImageLabel[j][i] = ImageLabel[j-1][i];
+                          }
+                          else if (ImageLabel[j-1][i-1] != 0)
+                          {
+                                  ImageLabel[j][i] = ImageLabel[j-1][i-1];
+                          }
+                          else if (ImageLabel[j][i-1] != 0)
+                          {
+                                  ImageLabel[j][i] = ImageLabel[j][i-1];
+                          }
+                          else if (ImageLabel[j+1][i-1] != 0)
+                          {
+                                  ImageLabel[j][i] = ImageLabel[j+1][i-1];
+                          }
+                          else
+                          {
+                                  ImageLabel[j][i] = CurrentLabel;
+                                  CurrentLabel++;
+                          }
+                  }
+           }
+        }
 
-      /*Mengerjakan algoritma blobbing : second pass*/
-      for (int i = 1 ; i < ImageLabel[0].length ; i++)
-      {
+        /*Mengerjakan algoritma blobbing : second pass*/
+        for (int i = 1 ; i < ImageLabel[0].length ; i++)
+        {
       	 for (int j = 1 ; j < ImageLabel.length ; j++)
       	 {
       		if (ImageLabel[j][i] != 0)

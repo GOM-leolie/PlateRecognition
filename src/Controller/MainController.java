@@ -2,8 +2,16 @@ package Controller;
 
 import View.*;
 import Utility.*;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.*;
 import java.util.*;
+import javax.imageio.ImageIO;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.io.*;
+
 
 /**
  *
@@ -11,15 +19,38 @@ import java.util.*;
  */
 public class MainController implements IController{
     
+    int[][][] imagePixels;
+    
     public static void main(String[] args)
     {
         new MainController();
+        try
+        {
+            String path = "C:\\users\\Leo\\Desktop\\0020.DCM";
+            InputStream stream = new FileInputStream(path);
+            DicomInputStream dicomStream = new DicomInputStream(stream);
+            Attributes attributes = dicomStream.readDataset();
+            
+            java.io.File f = new java.io.File(path);
+            javax.imageio.stream.ImageInputStream dicomImage = javax.imageio.ImageIO.createImageInputStream(f);
+            
+            Image img = ImageIO.read(dicomImage);
+            
+            System.out.println(attributes.getString(Tag.PatientName));
+            
+        }
+        catch(Exception e)
+        {
+            
+        }
+        
+        
     }
     
     public MainController()
     {
-        MainUI newUI = new MainUI(this);
-        newUI.setVisible(true);
+        MainWindowGUI newUI = new MainWindowGUI(this);
+        //newUI.setVisible(true);
     }
     
     @Override
@@ -39,13 +70,8 @@ public class MainController implements IController{
     @Override
     public void imageLoaded(File image)
     {
-        
-    }
+        imagePixels = ReadWritePNG.ReadPNG(image.toPath().toString());     
+    }    
     
-    @Override
-    public void mnuSaveImage_OnClick()
-    {
-        
-    }
     
 }

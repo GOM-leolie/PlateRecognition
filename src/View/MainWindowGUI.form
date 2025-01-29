@@ -9,52 +9,51 @@
             <Property name="text" type="java.lang.String" value="File"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem2">
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuSaveImage">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Simpan Gambar"/>
+                <Property name="text" type="java.lang.String" value="Save Image"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem2ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuSaveImageActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuLoadImage">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Muat Gambar"/>
+                <Property name="text" type="java.lang.String" value="Load Image"/>
               </Properties>
               <Events>
-                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jMenuItem1MouseClicked"/>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem1ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuLoadImageActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator5">
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem4">
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuWritePixels">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Cetak Piksel (.txt)"/>
+                <Property name="text" type="java.lang.String" value="Write Pixels"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem4ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuWritePixelsActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator6">
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem3">
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuExit">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Exit"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem3ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuExitActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu2">
+        <Menu class="javax.swing.JMenu" name="jMenuAbout">
           <Properties>
             <Property name="text" type="java.lang.String" value="About"/>
           </Properties>
           <Events>
-            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jMenu2MouseClicked"/>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenu2ActionPerformed"/>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jMenuAboutMouseClicked"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuAboutActionPerformed"/>
           </Events>
         </Menu>
       </SubComponents>
@@ -92,34 +91,31 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="proc_mean_filter" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="proc_median_filter" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="proc_sobel_edge" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="proc_blobbing" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="proc_image_split" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                                  <Component id="list_label_scroll" alignment="1" min="-2" pref="156" max="-2" attributes="0"/>
-                                  <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="jSeparator3" max="32767" attributes="0"/>
-                                      <Component id="jSeparator4" alignment="0" min="-2" pref="156" max="-2" attributes="0"/>
-                                  </Group>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="chkMeanFilter" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkMedianFilter" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkSobel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkBlobbing" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkRegionSplitting" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" alignment="0" groupAlignment="0" attributes="0">
+                              <Component id="list_label_scroll" alignment="1" min="-2" pref="156" max="-2" attributes="0"/>
+                              <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="jSeparator3" max="32767" attributes="0"/>
+                                  <Component id="jSeparator4" alignment="0" min="-2" pref="156" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="lbl_list" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="btn_proc" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="32767" attributes="0"/>
-                                  <Component id="btn_reset" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="proc_feature_extraction" min="-2" max="-2" attributes="0"/>
-                              <Component id="cmb_image" alignment="0" min="-2" pref="136" max="-2" attributes="0"/>
-                              <Group type="102" attributes="0">
-                                  <Component id="slider_red" min="-2" pref="126" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="lbl_red_color" min="-2" pref="26" max="-2" attributes="0"/>
-                              </Group>
+                          </Group>
+                          <Component id="lbl_list" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="btn_proc" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="btn_reset" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="chkFeatureExtraction" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="slider_red" min="-2" pref="126" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="lbl_red_color" min="-2" pref="26" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="slider_green" min="-2" pref="126" max="-2" attributes="0"/>
@@ -131,11 +127,12 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="lbl_blue_color" min="-2" pref="26" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="cmb_image" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="proc_greyscale" min="-2" max="-2" attributes="0"/>
+                      <Component id="chkGreyscale" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="btnShowHistogram" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="32767" attributes="0"/>
@@ -146,9 +143,9 @@
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="img_src_output" alignment="0" pref="745" max="32767" attributes="0"/>
+                  <Component id="jLabelImageOutput" alignment="0" pref="745" max="32767" attributes="0"/>
                   <Component id="jSeparator2" alignment="0" max="32767" attributes="0"/>
-                  <Component id="img_src_input" alignment="1" max="32767" attributes="0"/>
+                  <Component id="jLabelImageInput" alignment="1" max="32767" attributes="0"/>
               </Group>
               <EmptySpace pref="44" max="32767" attributes="0"/>
           </Group>
@@ -162,13 +159,13 @@
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="img_src_input" min="-2" pref="263" max="-2" attributes="0"/>
+                      <Component id="jLabelImageInput" min="-2" pref="263" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jSeparator2" min="-2" pref="10" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                       <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="img_src_output" min="-2" pref="255" max="-2" attributes="0"/>
+                      <Component id="jLabelImageOutput" min="-2" pref="255" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jSeparator1" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
@@ -176,21 +173,21 @@
                       <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="proc_greyscale" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="chkGreyscale" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnShowHistogram" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="proc_mean_filter" min="-2" max="-2" attributes="0"/>
+                      <Component id="chkMeanFilter" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="proc_median_filter" min="-2" max="-2" attributes="0"/>
+                      <Component id="chkMedianFilter" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="proc_sobel_edge" min="-2" max="-2" attributes="0"/>
+                      <Component id="chkSobel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="proc_blobbing" min="-2" max="-2" attributes="0"/>
+                      <Component id="chkBlobbing" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="proc_image_split" min="-2" max="-2" attributes="0"/>
+                      <Component id="chkRegionSplitting" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="proc_feature_extraction" min="-2" max="-2" attributes="0"/>
+                      <Component id="chkFeatureExtraction" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -255,50 +252,50 @@
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator2">
     </Component>
-    <Component class="javax.swing.JLabel" name="img_src_output">
+    <Component class="javax.swing.JLabel" name="jLabelImageOutput">
     </Component>
-    <Component class="javax.swing.JLabel" name="img_src_input">
+    <Component class="javax.swing.JLabel" name="jLabelImageInput">
     </Component>
-    <Component class="javax.swing.JCheckBox" name="proc_greyscale">
+    <Component class="javax.swing.JCheckBox" name="chkGreyscale">
       <Properties>
         <Property name="text" type="java.lang.String" value="Gray Scale"/>
       </Properties>
       <Events>
-        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="proc_greyscaleItemStateChanged"/>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkGreyscaleItemStateChanged"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="proc_mean_filter">
+    <Component class="javax.swing.JCheckBox" name="chkMeanFilter">
       <Properties>
         <Property name="text" type="java.lang.String" value="Mean Filter"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="proc_median_filter">
+    <Component class="javax.swing.JCheckBox" name="chkMedianFilter">
       <Properties>
         <Property name="text" type="java.lang.String" value="Median Filter"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="proc_sobel_edge">
+    <Component class="javax.swing.JCheckBox" name="chkSobel">
       <Properties>
         <Property name="text" type="java.lang.String" value="Sobel Edge Detectioin"/>
       </Properties>
       <Events>
-        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="proc_sobel_edgeItemStateChanged"/>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkSobelItemStateChanged"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="proc_blobbing">
+    <Component class="javax.swing.JCheckBox" name="chkBlobbing">
       <Properties>
         <Property name="text" type="java.lang.String" value="Blobbing"/>
       </Properties>
       <Events>
-        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="proc_blobbingItemStateChanged"/>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkBlobbingItemStateChanged"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="proc_image_split">
+    <Component class="javax.swing.JCheckBox" name="chkRegionSplitting">
       <Properties>
         <Property name="text" type="java.lang.String" value="Region Splitting"/>
       </Properties>
       <Events>
-        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="proc_image_splitItemStateChanged"/>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="chkRegionSplittingItemStateChanged"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
@@ -359,7 +356,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_resetActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="proc_feature_extraction">
+    <Component class="javax.swing.JCheckBox" name="chkFeatureExtraction">
       <Properties>
         <Property name="text" type="java.lang.String" value="Feature Extraction"/>
       </Properties>
