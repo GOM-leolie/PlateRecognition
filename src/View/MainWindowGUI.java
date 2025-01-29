@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.swing.BoxLayout;
@@ -48,7 +49,7 @@ public class MainWindowGUI extends javax.swing.JFrame {
     private String output;
     private BufferedImage resultImage;
             
-    IController controller;
+    MainController controller;
     
     public MainWindowGUI() {
         initComponents();
@@ -71,16 +72,20 @@ public class MainWindowGUI extends javax.swing.JFrame {
         btnShowHistogram.setVisible(false);
     }
 
-    public MainWindowGUI(IController newController)
+    public MainWindowGUI(MainController newController)
     {
         controller = newController;
         
+        initialiseUI();   
+    }
+    
+    void showUI()
+    {
+        initComponents();
+        
+        /*Getting the screen size and re-locate window to centre screen*/
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
-        
-        initialiseUI();
-        
-        
     }
     
     void readDicom()
@@ -130,6 +135,10 @@ public class MainWindowGUI extends javax.swing.JFrame {
         }
     }
     
+    /**
+     * Function to initialise the look and feel of the UI. 
+     * Java Swing framework handle this code.
+     */
     void initialiseUI()
     {
         /* Set the Nimbus look and feel */
@@ -158,9 +167,99 @@ public class MainWindowGUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MainWindowGUI().setVisible(true);
+                //new MainWindowGUI().setVisible(true);
+                MainWindowGUI.this.setVisible(true);
+                MainWindowGUI.this.showUI();
+                resetUIElement();
             }
-        });   
+        });
+    }
+    
+    /**
+     * Resetting all UI element assuming no image has been selected yet.
+     * This means no processing can be performed.
+     */
+    void resetUIElement()
+    {
+        btn_proc.setEnabled(true);
+        resultImage = null;
+        list_label.setEnabled(true);
+        btn_reset.setEnabled(false);
+        chkGreyscale.setSelected(false);
+        list_label.removeListSelectionListener(listener);
+        model.removeAllElements();
+        chkMeanFilter.setEnabled(false);
+        chkMedianFilter.setEnabled(false);
+        chkSobel.setEnabled(false);
+        chkBlobbing.setEnabled(false);
+        chkRegionSplitting.setEnabled(false);
+        chkFeatureExtraction.setEnabled(false);
+        list_label.setVisible(false);
+        list_label_scroll.setVisible(false);
+        lbl_list.setVisible(false);
+        jLabelImageOutput.setIcon(null);
+        slider_red.setVisible(false);
+        slider_green.setVisible(false);
+        slider_blue.setVisible(false);
+        lbl_red_color.setVisible(false);
+        lbl_green_color.setVisible(false);
+        lbl_blue_color.setVisible(false);
+        cmb_image.setVisible(false);
+        slider_red.setValue(0);
+        slider_green.setValue(0);
+        slider_blue.setValue(0);
+        cmb_image.setEnabled(true);
+        cmb_image.setSelectedIndex(0);
+        lbl_red_color.setText("R");
+        lbl_green_color.setText("G");
+        lbl_blue_color.setText("B");
+        output = "";
+        
+        if (model2.getSize() == 4)
+           model2.removeElementAt(3);
+    }
+    
+    void showList()
+    {
+        lbl_list.setVisible(true);
+        lbl_list.setText("List of Region");
+        list_label.setVisible(true);
+        list_label_scroll.setVisible(true);
+        
+        for (int i = 0 ; i < registeredObjects.size() ; i++)
+           model.addElement(Integer.toString(registeredObjects.get(i)));
+        
+        slider_red.setVisible(true);
+        slider_green.setVisible(true);
+        slider_blue.setVisible(true);
+        lbl_red_color.setVisible(true);
+        lbl_green_color.setVisible(true);
+        lbl_blue_color.setVisible(true);
+
+        listener = new ListSelectionListener()
+        {
+           public void valueChanged(ListSelectionEvent ev)
+           {
+              int option;
+              List<String> list = ((JList)ev.getSource()).getSelectedValuesList();
+              option = Integer.parseInt((String)list.get(0));
+
+              for (int i = 0 ; i < blobbingResultDuplicate.length ; i++)
+                 for (int j = 0 ; j < blobbingResultDuplicate[0].length ; j++)
+                    if (blobbingResultDuplicate[i][j] == option)
+                    {
+                       split[i][j][0] = slider_red.getValue();
+                       split[i][j][1] = slider_green.getValue();
+                       split[i][j][2] = slider_blue.getValue();
+                    }
+
+              imagePixelCopy = split;
+              OutputImage(1);
+
+            }
+        }; 
+
+        list_label.addListSelectionListener(listener);
     }
     
     @SuppressWarnings("unchecked")
@@ -209,11 +308,6 @@ public class MainWindowGUI extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Plate Recognitioin");
         setResizable(false);
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowActivated(java.awt.event.WindowEvent evt) {
-                formWindowActivated(evt);
-            }
-        });
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel1.setText("Input Image");
@@ -361,11 +455,6 @@ public class MainWindowGUI extends javax.swing.JFrame {
         jMenuBar1.add(jMenu1);
 
         jMenuAbout.setText("About");
-        jMenuAbout.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jMenuAboutMouseClicked(evt);
-            }
-        });
         jMenuAbout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuAboutActionPerformed(evt);
@@ -499,33 +588,6 @@ public class MainWindowGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-       if (imagePixel == null)
-       {
-          chkGreyscale.setEnabled(false);
-          chkMeanFilter.setEnabled(false);
-          chkMedianFilter.setEnabled(false);
-          chkSobel.setEnabled(false);
-          chkBlobbing.setEnabled(false);
-          chkRegionSplitting.setEnabled(false);
-          chkFeatureExtraction.setEnabled(false);
-          list_label.setVisible(false);
-          list_label_scroll.setVisible(false);
-          lbl_list.setVisible(false);
-          btn_reset.setEnabled(false);
-          slider_red.setVisible(false);
-          slider_green.setVisible(false);
-          slider_blue.setVisible(false);
-          lbl_red_color.setVisible(false);
-          lbl_green_color.setVisible(false);
-          lbl_blue_color.setVisible(false);
-          lbl_red_color.setText("R");
-          lbl_green_color.setText("G");
-          lbl_blue_color.setText("B");
-          cmb_image.setVisible(false);
-       }
-    }//GEN-LAST:event_formWindowActivated
-
     private void chkGreyscaleItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkGreyscaleItemStateChanged
         if (chkGreyscale.isSelected())
         {
@@ -558,8 +620,6 @@ public class MainWindowGUI extends javax.swing.JFrame {
         if (jLabelImageOutput.getIcon() != null)
             btn_resetActionPerformed(evt);
         
-        
-        
         String currPath = Paths.get("").toAbsolutePath().toString();
         
         JFileChooser fileChooser = new JFileChooser(currPath);
@@ -571,9 +631,6 @@ public class MainWindowGUI extends javax.swing.JFrame {
            ImageLocation = fileChooser.getSelectedFile();
            InputImage(ImageLocation);
         }
-        
-        
-        //readDicom();
     }//GEN-LAST:event_jMenuLoadImageActionPerformed
 
     private void jMenuSaveImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuSaveImageActionPerformed
@@ -587,14 +644,14 @@ public class MainWindowGUI extends javax.swing.JFrame {
         {
            ImageLocation = fileChooser.getSelectedFile();
            WriteImage(ImageLocation);
-           JOptionPane.showMessageDialog(this,"Simpan File Berhasil !", "Sukses", JOptionPane.INFORMATION_MESSAGE);
+           JOptionPane.showMessageDialog(this,"Save Succeed!", "Sukses", JOptionPane.INFORMATION_MESSAGE);
         }
-        }else {JOptionPane.showMessageDialog(this, "Belum ada gambar yang dapat di save, proses gambar terlebih dahulu !", "Error", JOptionPane.ERROR_MESSAGE );}
+        }else {JOptionPane.showMessageDialog(this, "No Output image to be saved.", "Error", JOptionPane.ERROR_MESSAGE );}
     }//GEN-LAST:event_jMenuSaveImageActionPerformed
 
     private void jMenuExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuExitActionPerformed
         
-        int userChoice = JOptionPane.showConfirmDialog(this, "Anda Yakin ingin Keluar ?", "Keluar", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        int userChoice = JOptionPane.showConfirmDialog(this, "Are you sure?", "Exit", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         
         if (userChoice == 0)
         {
@@ -608,24 +665,20 @@ public class MainWindowGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuExitActionPerformed
 
     private void jMenuAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuAboutActionPerformed
-        String Message = "Dibuat oleh Leo Lie" + '\n' + "Indonesian Plate Recognition Beta V.5.0";
+        String Message = "Made by Leo Lie" + '\n' + "Indonesian Plate Recognition Beta V.5.0";
         JOptionPane.showMessageDialog(this, Message);
     }//GEN-LAST:event_jMenuAboutActionPerformed
-
-    private void jMenuAboutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jMenuAboutMouseClicked
-        String Message = "Dibuat oleh Leo Lie" + '\n' + "Indonesian Plate Recognition Beta V.5.0";
-        JOptionPane.showMessageDialog(this, Message);
-    }//GEN-LAST:event_jMenuAboutMouseClicked
 
     private void btn_procActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_procActionPerformed
         if (imagePixel != null)
         {
-           Process();
+            controller.imageProcessing();
+           //Process();
            btn_reset.setEnabled(true);
            btn_proc.setEnabled(false);
         }
         else
-           JOptionPane.showMessageDialog(this, "Masukkan lokasi gambar terlebih dahulu !", "Error", JOptionPane.ERROR_MESSAGE);
+           JOptionPane.showMessageDialog(this, "Please input image first", "Error", JOptionPane.ERROR_MESSAGE);
     }//GEN-LAST:event_btn_procActionPerformed
 
     private void chkBlobbingItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkBlobbingItemStateChanged
@@ -644,42 +697,7 @@ public class MainWindowGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_chkBlobbingItemStateChanged
 
     private void btn_resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_resetActionPerformed
-        btn_proc.setEnabled(true);
-        resultImage = null;
-        list_label.setEnabled(true);
-        btn_reset.setEnabled(false);
-        chkGreyscale.setSelected(false);
-        list_label.removeListSelectionListener(listener);
-        model.removeAllElements();
-        chkMeanFilter.setEnabled(false);
-        chkMedianFilter.setEnabled(false);
-        chkSobel.setEnabled(false);
-        chkBlobbing.setEnabled(false);
-        chkRegionSplitting.setEnabled(false);
-        chkFeatureExtraction.setEnabled(false);
-        list_label.setVisible(false);
-        list_label_scroll.setVisible(false);
-        lbl_list.setVisible(false);
-        jLabelImageOutput.setIcon(null);
-        slider_red.setVisible(false);
-        slider_green.setVisible(false);
-        slider_blue.setVisible(false);
-        lbl_red_color.setVisible(false);
-        lbl_green_color.setVisible(false);
-        lbl_blue_color.setVisible(false);
-        cmb_image.setVisible(false);
-        slider_red.setValue(0);
-        slider_green.setValue(0);
-        slider_blue.setValue(0);
-        cmb_image.setEnabled(true);
-        cmb_image.setSelectedIndex(0);
-        lbl_red_color.setText("R");
-        lbl_green_color.setText("G");
-        lbl_blue_color.setText("B");
-        output = "";
-        
-        if (model2.getSize() == 4)
-           model2.removeElementAt(3);
+        resetUIElement();
     }//GEN-LAST:event_btn_resetActionPerformed
 
     private void chkRegionSplittingItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkRegionSplittingItemStateChanged
@@ -721,10 +739,6 @@ public class MainWindowGUI extends javax.swing.JFrame {
            PrintWriter stream = new PrintWriter(location + ".txt");
            int counter = 0;
         
-           stream.println("Piksel akan berurut dari kiri atas ke kanan bawah dengan urutan piksel merah, piksel biru, dan piksel hijau.");
-           stream.println("Setelah mencapai kolom ke 100, piksel dilanjutkan di baris selanjutnya.");
-           stream.println("By : Agusalim");
-        
            for (int i = 0 ; i < imagePixelCopy.length ; i++)
               for (int j = 0 ; j < imagePixelCopy[0].length ; j++)
                 for (int k = 0 ; k < 3 ; k++)
@@ -735,16 +749,16 @@ public class MainWindowGUI extends javax.swing.JFrame {
                        stream.println(imagePixelCopy[i][j][k]);
                 }
         stream.close();
-        JOptionPane.showMessageDialog(this,"Simpan File Berhasil !", "Sukses", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this,"Save Succeed !", "Sukses", JOptionPane.INFORMATION_MESSAGE);
         }
         }
         catch (Exception e)
         {
-            JOptionPane.showMessageDialog(this, "Gagal menyimpan file !", "Error", JOptionPane.ERROR_MESSAGE );
+            JOptionPane.showMessageDialog(this, "Failed!", "Error", JOptionPane.ERROR_MESSAGE );
         }
         }
         else
-            JOptionPane.showMessageDialog(this, "Tidak ada yang bisa dicetak, proses gambar terlebih dahulu !", "Error", JOptionPane.ERROR_MESSAGE );
+            JOptionPane.showMessageDialog(this, "No output to be saved.", "Error", JOptionPane.ERROR_MESSAGE );
     }//GEN-LAST:event_jMenuWritePixelsActionPerformed
 
     private void cmb_imageItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmb_imageItemStateChanged
@@ -786,42 +800,8 @@ public class MainWindowGUI extends javax.swing.JFrame {
         int[] histogramData = intensityHistogram[0];
         int totalBin = 20;
         
-        HistogramUI.showHistogram(histogramData, totalBin);
-        
-        
+        HistogramUI.showHistogram(histogramData, totalBin);        
     }//GEN-LAST:event_btnShowHistogramActionPerformed
-
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainWindowGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainWindowGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainWindowGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainWindowGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new MainWindowGUI().setVisible(true);
-            }
-        });        
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnShowHistogram;
@@ -875,6 +855,8 @@ public class MainWindowGUI extends javax.swing.JFrame {
           this.jLabelImageInput.setIcon(new ImageIcon(inputImage));
           imagePixel = ReadWritePNG.ReadPNG(Location.toPath().toString());
           chkGreyscale.setEnabled(true);
+          
+          controller.imageLoaded(Location);
        }
        catch (Exception e)
        {
@@ -909,6 +891,29 @@ public class MainWindowGUI extends javax.swing.JFrame {
        }
     }
     
+    public void populateOutputImage(int[][][] imagePixels)
+    {
+       try
+       {
+           BufferedImage imageStream = new BufferedImage(imagePixels.length, imagePixels[0].length, BufferedImage.TYPE_INT_ARGB);
+         
+            /*Going through the pixels array, combining the RGB into one pixel and save it in the image buffer*/
+            for (int i = 0 ; i < imagePixels.length ; i++)
+               for (int j = 0 ; j < imagePixels[0].length ; j++)
+               {
+                  Color PixelColor = new Color(imagePixels[i][j][0],imagePixels[i][j][1],imagePixels[i][j][2]);
+                  imageStream.setRGB(i, j, PixelColor.getRGB());
+               }
+            
+            Image outputImage = imageStream.getScaledInstance(this.jLabelImageOutput.getWidth(), this.jLabelImageOutput.getHeight(),Image.SCALE_SMOOTH);
+            this.jLabelImageOutput.setIcon(new ImageIcon(outputImage));
+       }
+       catch (Exception e)
+       {
+          JOptionPane.showMessageDialog(this, "Tidak dapat menulis file !", "Error", JOptionPane.ERROR_MESSAGE );
+       }
+    }
+    
     public void WriteImage(File Location)
     {
         try
@@ -920,7 +925,6 @@ public class MainWindowGUI extends javax.swing.JFrame {
            JOptionPane.showMessageDialog(this, "Tidak dapat menulis file !", "Error", JOptionPane.ERROR_MESSAGE );
         }
     }
-    
     
     public void Process()
     {
