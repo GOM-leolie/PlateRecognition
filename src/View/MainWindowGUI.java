@@ -218,48 +218,69 @@ public class MainWindowGUI extends javax.swing.JFrame {
         if (model2.getSize() == 4)
            model2.removeElementAt(3);
     }
-    
-    void showList()
+
+    public void showComboBox(ArrayList<String> options)
     {
+        cmb_image.setVisible(true);
+
+        DefaultComboBoxModel<String> cmbOptions = new DefaultComboBoxModel<>();
+
+        cmbOptions.addAll(options);
+        cmb_image.setModel(cmbOptions);
+    }
+
+    public void showSlider(boolean isVisible)
+    {
+        slider_red.setVisible(isVisible);
+        slider_green.setVisible(isVisible);
+        slider_blue.setVisible(isVisible);
+        lbl_red_color.setVisible(isVisible);
+        lbl_green_color.setVisible(isVisible);
+        lbl_blue_color.setVisible(isVisible);
+    }
+
+    public void showList(ArrayList<String> modelContents)
+    {
+        /*Show ListView*/
         lbl_list.setVisible(true);
         lbl_list.setText("List of Region");
         list_label.setVisible(true);
         list_label_scroll.setVisible(true);
-        
-        for (int i = 0 ; i < registeredObjects.size() ; i++)
-           model.addElement(Integer.toString(registeredObjects.get(i)));
-        
-        slider_red.setVisible(true);
-        slider_green.setVisible(true);
-        slider_blue.setVisible(true);
-        lbl_red_color.setVisible(true);
-        lbl_green_color.setVisible(true);
-        lbl_blue_color.setVisible(true);
 
-        listener = new ListSelectionListener()
-        {
-           public void valueChanged(ListSelectionEvent ev)
-           {
-              int option;
-              List<String> list = ((JList)ev.getSource()).getSelectedValuesList();
-              option = Integer.parseInt((String)list.get(0));
+        /*Populating ListView*/
+        model.clear();
+        for (int i = 0 ; i < modelContents.size() ; i++)
+           model.addElement(modelContents.get(i));
 
-              for (int i = 0 ; i < blobbingResultDuplicate.length ; i++)
-                 for (int j = 0 ; j < blobbingResultDuplicate[0].length ; j++)
-                    if (blobbingResultDuplicate[i][j] == option)
-                    {
-                       split[i][j][0] = slider_red.getValue();
-                       split[i][j][1] = slider_green.getValue();
-                       split[i][j][2] = slider_blue.getValue();
-                    }
+        /*Show Slider*/
+        showSlider(true);
 
-              imagePixelCopy = split;
-              OutputImage(1);
+        /*Add Listener when the label is clicked*/
+        list_label.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent listSelectionEvent) {
+                int option;
+                List<String> list = ((JList)listSelectionEvent.getSource()).getSelectedValuesList();
+                String selectedItem = list.get(0);
 
+                controller.listItemOnClick(selectedItem);
             }
-        }; 
+        });
+    }
 
-        list_label.addListSelectionListener(listener);
+    public int[] getSliderValue()
+    {
+        int[] sliderValue = new int[3];
+        sliderValue[0] = slider_red.getValue();
+        sliderValue[1] = slider_green.getValue();
+        sliderValue[2] = slider_blue.getValue();
+
+        return sliderValue;
+    }
+
+    public int getComboBoxSelectedItemPosition()
+    {
+        return cmb_image.getSelectedIndex();
     }
     
     @SuppressWarnings("unchecked")

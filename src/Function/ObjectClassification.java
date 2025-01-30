@@ -793,6 +793,7 @@ public class ObjectClassification {
       LargestHeight = 0;
 
       /*Mensplit gambar sesuai label, menghasilkan gambar yang telah displit*/
+       /*Separating the image based on the labelling.*/
       for (int i = 0 ; i < ValidLabel.size() ; i++)
       {
          for (int j = 0 ; j < ImageLabel.length ; j++)
