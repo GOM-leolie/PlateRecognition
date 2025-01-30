@@ -7,6 +7,7 @@ import Function.ObjectClassification;
 import Function.ImageProcessing;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -25,6 +26,7 @@ import javax.imageio.ImageReader;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -38,101 +40,22 @@ import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che3.io.DicomInputStream;
 
 public class MainWindowGUI extends javax.swing.JFrame {
-
-    private int[][][] imagePixel;
-    private int[][][] imagePixelCopy;
-    private int[][] intensityHistogram;
-    private int[][][] imagePixelResult;
-    private DefaultListModel<String> model = new DefaultListModel<>();
-    private DefaultComboBoxModel<String> model2 = new DefaultComboBoxModel<>();
-    private ListSelectionListener listener;
-    private String output;
-    private BufferedImage resultImage;
             
     MainController controller;
     
-    public MainWindowGUI() {
-        initComponents();
-        imagePixel = null;
-        imagePixelCopy = null;
-        imagePixelResult = null;
-        list_label.setModel(model);
-        listener = null;
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
-
-        model2.addElement("Blob Image");
-        model2.addElement("Grayscale Image");
-        model2.addElement("Sobel Image");
-        cmb_image.setModel(model2);
-        
-        output = "";
-        resultImage = null;
-        
-        btnShowHistogram.setVisible(false);
-    }
-
     public MainWindowGUI(MainController newController)
     {
         controller = newController;
-        
         initialiseUI();   
     }
     
     void showUI()
     {
-        initComponents();
-        
-        /*Getting the screen size and re-locate window to centre screen*/
+        initComponents();       
+    
+        /*Getting the screen size and relocate window to centre screen*/
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
-    }
-    
-    void readDicom()
-    {
-        try
-        {
-            String path = "C:\\users\\Leo\\Desktop\\0020.DCM";
-            InputStream stream = new FileInputStream(path);
-            DicomInputStream dicomStream = new DicomInputStream(stream);
-            Attributes attributes = dicomStream.readDataset();
-                        
-            java.io.File f = new java.io.File(path);
-            javax.imageio.stream.ImageInputStream dicomImage = javax.imageio.ImageIO.createImageInputStream(f);
-                       
-            BufferedImage img = ImageIO.read(dicomImage);
-            
-            int width = img.getWidth();
-            int height = img.getHeight();
-            
-            imagePixel = new int[width][height][3];
-            for (int i = 0 ; i < width ; i++)
-                for (int j = 0 ; j < height ; j++)
-                {
-                    Color PixelColor = new Color(img.getRGB(i,j));
-                    imagePixel[i][j][0] = PixelColor.getRed();
-                    imagePixel[i][j][1] = PixelColor.getGreen();
-                    imagePixel[i][j][2] = PixelColor.getBlue();
-                }
-                    
-            ReadWritePNG.WritePNG("C:\\users\\Leo\\Desktop\\test_dicom_2.png", imagePixel);
-            
-            File outputfile = new File("C:\\users\\Leo\\Desktop\\test_dicom_1.jpg");
-            ImageIO.write(img, "jpeg", outputfile);
-            Image inputImage = img.getScaledInstance(this.jLabelImageInput.getWidth(), this.jLabelImageInput.getHeight(),Image.SCALE_SMOOTH);
-            
-            this.jLabelImageInput.setIcon(new ImageIcon(inputImage));
-            chkGreyscale.setEnabled(true);
-            System.out.println(attributes.getString(Tag.PatientName));
-
-            
-            imagePixel = ReadWritePNG.ReadPNG("C:\\users\\Leo\\Desktop\\test_dicom.png");
-            
-        }
-        catch(Exception e)
-        {
-            System.out.println(e.getMessage());
-        }
     }
     
     /**
@@ -171,6 +94,7 @@ public class MainWindowGUI extends javax.swing.JFrame {
                 MainWindowGUI.this.setVisible(true);
                 MainWindowGUI.this.showUI();
                 resetUIElement();
+                btnShowHistogram.setVisible(false);
             }
         });
     }
@@ -182,12 +106,9 @@ public class MainWindowGUI extends javax.swing.JFrame {
     void resetUIElement()
     {
         btn_proc.setEnabled(true);
-        resultImage = null;
         list_label.setEnabled(true);
         btn_reset.setEnabled(false);
         chkGreyscale.setSelected(false);
-        list_label.removeListSelectionListener(listener);
-        model.removeAllElements();
         chkMeanFilter.setEnabled(false);
         chkMedianFilter.setEnabled(false);
         chkSobel.setEnabled(false);
@@ -213,10 +134,7 @@ public class MainWindowGUI extends javax.swing.JFrame {
         lbl_red_color.setText("R");
         lbl_green_color.setText("G");
         lbl_blue_color.setText("B");
-        output = "";
-        
-        if (model2.getSize() == 4)
-           model2.removeElementAt(3);
+     
     }
 
     public void showComboBox(ArrayList<String> options)
@@ -248,10 +166,12 @@ public class MainWindowGUI extends javax.swing.JFrame {
         list_label_scroll.setVisible(true);
 
         /*Populating ListView*/
+        DefaultListModel<String> model = new DefaultListModel<String>();
         model.clear();
-        for (int i = 0 ; i < modelContents.size() ; i++)
-           model.addElement(modelContents.get(i));
-
+        model.addAll(modelContents);
+        list_label.setModel(model);
+        //for (int i = 0 ; i < modelContents.size() ; i++)
+           
         /*Show Slider*/
         showSlider(true);
 
@@ -259,11 +179,15 @@ public class MainWindowGUI extends javax.swing.JFrame {
         list_label.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
-                int option;
+                int option = ((JList)listSelectionEvent.getSource()).getSelectedIndex();
                 List<String> list = ((JList)listSelectionEvent.getSource()).getSelectedValuesList();
-                String selectedItem = list.get(0);
+                
+                if (list.size() > 0)
+                {
+                    String selectedItem = list.get(0);
+                    controller.listItemOnClick(selectedItem, option);
+                }
 
-                controller.listItemOnClick(selectedItem);
             }
         });
     }
@@ -283,10 +207,63 @@ public class MainWindowGUI extends javax.swing.JFrame {
         return cmb_image.getSelectedIndex();
     }
     
+    public void populateInputImage(int[][][] imagePixels)
+    {
+       try
+       {
+           BufferedImage imageStream = new BufferedImage(imagePixels.length, imagePixels[0].length, BufferedImage.TYPE_INT_ARGB);
+         
+            /*Going through the pixels array, combining the RGB into one pixel and save it in the image buffer*/
+            for (int i = 0 ; i < imagePixels.length ; i++)
+               for (int j = 0 ; j < imagePixels[0].length ; j++)
+               {
+                  Color PixelColor = new Color(imagePixels[i][j][0],imagePixels[i][j][1],imagePixels[i][j][2]);
+                  imageStream.setRGB(i, j, PixelColor.getRGB());
+               }
+            
+            Image outputImage = imageStream.getScaledInstance(this.jLabelImageOutput.getWidth(), this.jLabelImageOutput.getHeight(),Image.SCALE_SMOOTH);
+            this.jLabelImageInput.setIcon(new ImageIcon(outputImage));
+       }
+       catch (Exception e)
+       {
+          JOptionPane.showMessageDialog(this, "Tidak dapat menulis file !", "Error", JOptionPane.ERROR_MESSAGE );
+       }
+    }
+    
+    public void populateOutputImage(int[][][] imagePixels, boolean scaleAgainstLabel)
+    {
+       try
+       {
+           BufferedImage imageStream = new BufferedImage(imagePixels.length, imagePixels[0].length, BufferedImage.TYPE_INT_ARGB);
+         
+            /*Going through the pixels array, combining the RGB into one pixel and save it in the image buffer*/
+            for (int i = 0 ; i < imagePixels.length ; i++)
+               for (int j = 0 ; j < imagePixels[0].length ; j++)
+               {
+                  Color PixelColor = new Color(imagePixels[i][j][0],imagePixels[i][j][1],imagePixels[i][j][2]);
+                  imageStream.setRGB(i, j, PixelColor.getRGB());
+               }
+            
+            Image outputImage = null;
+            if (scaleAgainstLabel)
+                outputImage = imageStream.getScaledInstance(this.jLabelImageOutput.getWidth(), this.jLabelImageOutput.getHeight(),Image.SCALE_SMOOTH);
+            else
+                outputImage = imageStream.getScaledInstance(imageStream.getWidth() * 1, imageStream.getHeight() * 1,Image.SCALE_SMOOTH);
+            
+            this.jLabelImageOutput.setIcon(new ImageIcon(outputImage));
+       }
+       catch (Exception e)
+       {
+          JOptionPane.showMessageDialog(this, "Tidak dapat menulis file !", "Error", JOptionPane.ERROR_MESSAGE );
+       }
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jMenu2 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
@@ -321,10 +298,14 @@ public class MainWindowGUI extends javax.swing.JFrame {
         jMenuSaveImage = new javax.swing.JMenuItem();
         jMenuLoadImage = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
-        jMenuWritePixels = new javax.swing.JMenuItem();
+        jLoadDicom = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         jMenuExit = new javax.swing.JMenuItem();
         jMenuAbout = new javax.swing.JMenu();
+
+        jMenu2.setText("jMenu2");
+
+        jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Plate Recognitioin");
@@ -456,13 +437,13 @@ public class MainWindowGUI extends javax.swing.JFrame {
         jMenu1.add(jMenuLoadImage);
         jMenu1.add(jSeparator5);
 
-        jMenuWritePixels.setText("Write Pixels");
-        jMenuWritePixels.addActionListener(new java.awt.event.ActionListener() {
+        jLoadDicom.setText("Load DICOM");
+        jLoadDicom.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuWritePixelsActionPerformed(evt);
+                jLoadDicomActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuWritePixels);
+        jMenu1.add(jLoadDicom);
         jMenu1.add(jSeparator6);
 
         jMenuExit.setText("Exit");
@@ -476,9 +457,9 @@ public class MainWindowGUI extends javax.swing.JFrame {
         jMenuBar1.add(jMenu1);
 
         jMenuAbout.setText("About");
-        jMenuAbout.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuAboutActionPerformed(evt);
+        jMenuAbout.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jMenuAboutMousePressed(evt);
             }
         });
         jMenuBar1.add(jMenuAbout);
@@ -650,7 +631,7 @@ public class MainWindowGUI extends javax.swing.JFrame {
         if (returnValue == JFileChooser.APPROVE_OPTION)
         {
            ImageLocation = fileChooser.getSelectedFile();
-           InputImage(ImageLocation);
+           controller.imageLoaded(ImageLocation);
         }
     }//GEN-LAST:event_jMenuLoadImageActionPerformed
 
@@ -664,7 +645,8 @@ public class MainWindowGUI extends javax.swing.JFrame {
         if (returnValue == JFileChooser.APPROVE_OPTION)
         {
            ImageLocation = fileChooser.getSelectedFile();
-           WriteImage(ImageLocation);
+           Icon icon = jLabelImageOutput.getIcon();
+           controller.WriteImage(ImageLocation, icon);
            JOptionPane.showMessageDialog(this,"Save Succeed!", "Sukses", JOptionPane.INFORMATION_MESSAGE);
         }
         }else {JOptionPane.showMessageDialog(this, "No Output image to be saved.", "Error", JOptionPane.ERROR_MESSAGE );}
@@ -685,16 +667,19 @@ public class MainWindowGUI extends javax.swing.JFrame {
         System.exit(0);}
     }//GEN-LAST:event_jMenuExitActionPerformed
 
-    private void jMenuAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuAboutActionPerformed
-        String Message = "Made by Leo Lie" + '\n' + "Indonesian Plate Recognition Beta V.5.0";
-        JOptionPane.showMessageDialog(this, Message);
-    }//GEN-LAST:event_jMenuAboutActionPerformed
-
     private void btn_procActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_procActionPerformed
-        if (imagePixel != null)
+        
+        int imagePixel = 1;
+        if (controller.isImageLoaded())
         {
-            controller.imageProcessing();
-           //Process();
+            controller.performImageProcessing(chkGreyscale.isSelected(),
+                                                chkMeanFilter.isSelected(),
+                                                chkMedianFilter.isSelected(),
+                                                chkSobel.isSelected(),
+                                                chkBlobbing.isSelected(),
+                                                chkRegionSplitting.isSelected(),
+                                                chkFeatureExtraction.isSelected());/**/
+           
            btn_reset.setEnabled(true);
            btn_proc.setEnabled(false);
         }
@@ -743,86 +728,41 @@ public class MainWindowGUI extends javax.swing.JFrame {
         lbl_blue_color.setText(Integer.toString(slider_blue.getValue()));
     }//GEN-LAST:event_slider_blueStateChanged
 
-    private void jMenuWritePixelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuWritePixelsActionPerformed
-        if (jLabelImageOutput.getIcon() != null)
-        {
-        
-        try{
-        JFileChooser fileChooser = new JFileChooser();
-        int returnValue = fileChooser.showSaveDialog(this);
-        File FileLocation = null;
-        
-        if (returnValue == JFileChooser.APPROVE_OPTION)
-        {
-           FileLocation = fileChooser.getSelectedFile();
-           String location = FileLocation.getAbsolutePath();         
-            
-           PrintWriter stream = new PrintWriter(location + ".txt");
-           int counter = 0;
-        
-           for (int i = 0 ; i < imagePixelCopy.length ; i++)
-              for (int j = 0 ; j < imagePixelCopy[0].length ; j++)
-                for (int k = 0 ; k < 3 ; k++)
-                {   
-                   if (counter < 100)
-                       stream.print(imagePixelCopy[i][j][k] + " ");
-                   else
-                       stream.println(imagePixelCopy[i][j][k]);
-                }
-        stream.close();
-        JOptionPane.showMessageDialog(this,"Save Succeed !", "Sukses", JOptionPane.INFORMATION_MESSAGE);
-        }
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(this, "Failed!", "Error", JOptionPane.ERROR_MESSAGE );
-        }
-        }
-        else
-            JOptionPane.showMessageDialog(this, "No output to be saved.", "Error", JOptionPane.ERROR_MESSAGE );
-    }//GEN-LAST:event_jMenuWritePixelsActionPerformed
-
     private void cmb_imageItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmb_imageItemStateChanged
         if (cmb_image.getSelectedItem().equals("Result"))
         {
-            cmb_image.setEnabled(false);
-
-            list_label.setSelectedIndex(-1);
-            list_label.setEnabled(false);
-            model.removeAllElements();
-            model.addElement(output);
-            
-            jLabelImageOutput.setIcon(null);
-            
-            ImageIcon newImg = new ImageIcon(resultImage);
-
-            jLabelImageOutput.setIcon(newImg);
-            
-            Color PixelColor;
-            imagePixelCopy = new int[imagePixel.length][imagePixel[0].length][3];
-            
-            for (int i = 0 ; i < resultImage.getHeight() ; i++)
-            {
-               for (int j = 0 ; j < resultImage.getWidth() ; j++)
-               {
-                  PixelColor = new Color(resultImage.getRGB(j,i));
-                  imagePixelCopy[j][i][0] = PixelColor.getRed();
-                  imagePixelCopy[j][i][1] = PixelColor.getGreen();
-                  imagePixelCopy[j][i][2] = PixelColor.getBlue();
-               }
-            }
-
+            controller.showRecognisedPlateNumber();
         }
     }//GEN-LAST:event_cmb_imageItemStateChanged
 
     private void btnShowHistogramActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowHistogramActionPerformed
         
         //Open Histogram
-        int[] histogramData = intensityHistogram[0];
+        //int[] histogramData = intensityHistogram[0];
         int totalBin = 20;
         
-        HistogramUI.showHistogram(histogramData, totalBin);        
+        //HistogramUI.showHistogram(histogramData, totalBin);        
     }//GEN-LAST:event_btnShowHistogramActionPerformed
+
+    private void jMenuAboutMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jMenuAboutMousePressed
+        String Message = "Made by Leo Lie" + '\n' + "Indonesian Plate Recognition Beta V.6.0";
+        JOptionPane.showMessageDialog(this, Message);
+    }//GEN-LAST:event_jMenuAboutMousePressed
+
+    private void jLoadDicomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jLoadDicomActionPerformed
+        
+        String currPath = Paths.get("").toAbsolutePath().toString();
+        
+        JFileChooser fileChooser = new JFileChooser(currPath);
+        int returnValue = fileChooser.showOpenDialog(this);
+        File ImageLocation = null;
+        
+        if (returnValue == JFileChooser.APPROVE_OPTION)
+        {
+           ImageLocation = fileChooser.getSelectedFile();
+           controller.loadDICOMImage(ImageLocation.getAbsolutePath());
+        }
+    }//GEN-LAST:event_jLoadDicomActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnShowHistogram;
@@ -841,13 +781,15 @@ public class MainWindowGUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabelImageInput;
     private javax.swing.JLabel jLabelImageOutput;
+    private javax.swing.JMenuItem jLoadDicom;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenuAbout;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuExit;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuLoadImage;
     private javax.swing.JMenuItem jMenuSaveImage;
-    private javax.swing.JMenuItem jMenuWritePixels;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
@@ -864,363 +806,6 @@ public class MainWindowGUI extends javax.swing.JFrame {
     private javax.swing.JSlider slider_green;
     private javax.swing.JSlider slider_red;
     // End of variables declaration//GEN-END:variables
-
-    /*code --------------------- below*/
     
-    public void InputImage(File Location)
-    {
-       try
-       {
-          Image rawInputImage = ImageIO.read(Location);
-          Image inputImage = rawInputImage.getScaledInstance(this.jLabelImageInput.getWidth(), this.jLabelImageInput.getHeight(),Image.SCALE_SMOOTH);
-          this.jLabelImageInput.setIcon(new ImageIcon(inputImage));
-          imagePixel = ReadWritePNG.ReadPNG(Location.toPath().toString());
-          chkGreyscale.setEnabled(true);
-          
-          controller.imageLoaded(Location);
-       }
-       catch (Exception e)
-       {
-          JOptionPane.showMessageDialog(this, "File tidak dapat dibuka !", "Error", JOptionPane.ERROR_MESSAGE );
-       }
-    }
     
-    public void OutputImage(int type)
-    {
-       try
-       {
-          if (type == 1)
-          {
-             String s = Paths.get(".").toAbsolutePath().normalize().toString() + "\\prev.png";
-             ReadWritePNG.WritePNG(s, imagePixelCopy);
-             Image rawOutputImage = ImageIO.read(new File(s));
-             Image outputImage = rawOutputImage.getScaledInstance(this.jLabelImageOutput.getWidth(), this.jLabelImageOutput.getHeight(),Image.SCALE_SMOOTH);
-             this.jLabelImageOutput.setIcon(new ImageIcon(outputImage));
-          }
-          else
-          {
-             String s = Paths.get(".").toAbsolutePath().normalize().toString() + "\\prev.png";
-             ReadWritePNG.WritePNG(s, imagePixelCopy);
-             Image rawOutputImage = ImageIO.read(new File(s));
-             Image outputImage = rawOutputImage.getScaledInstance(rawOutputImage.getWidth(this)*1, rawOutputImage.getHeight(this)*1,Image.SCALE_SMOOTH);
-             this.jLabelImageOutput.setIcon(new ImageIcon(outputImage));
-          }
-       }
-       catch (Exception e)
-       {
-          JOptionPane.showMessageDialog(this, "Tidak dapat menulis file !", "Error", JOptionPane.ERROR_MESSAGE );
-       }
-    }
-    
-    public void populateOutputImage(int[][][] imagePixels)
-    {
-       try
-       {
-           BufferedImage imageStream = new BufferedImage(imagePixels.length, imagePixels[0].length, BufferedImage.TYPE_INT_ARGB);
-         
-            /*Going through the pixels array, combining the RGB into one pixel and save it in the image buffer*/
-            for (int i = 0 ; i < imagePixels.length ; i++)
-               for (int j = 0 ; j < imagePixels[0].length ; j++)
-               {
-                  Color PixelColor = new Color(imagePixels[i][j][0],imagePixels[i][j][1],imagePixels[i][j][2]);
-                  imageStream.setRGB(i, j, PixelColor.getRGB());
-               }
-            
-            Image outputImage = imageStream.getScaledInstance(this.jLabelImageOutput.getWidth(), this.jLabelImageOutput.getHeight(),Image.SCALE_SMOOTH);
-            this.jLabelImageOutput.setIcon(new ImageIcon(outputImage));
-       }
-       catch (Exception e)
-       {
-          JOptionPane.showMessageDialog(this, "Tidak dapat menulis file !", "Error", JOptionPane.ERROR_MESSAGE );
-       }
-    }
-    
-    public void WriteImage(File Location)
-    {
-        try
-        {
-           ReadWritePNG.WritePNG(Location.toPath().toString()+".png", imagePixelCopy);
-        }
-        catch (Exception e)
-        {
-           JOptionPane.showMessageDialog(this, "Tidak dapat menulis file !", "Error", JOptionPane.ERROR_MESSAGE );
-        }
-    }
-    
-    public void Process()
-    {
-        imagePixelCopy = new int[imagePixel.length][imagePixel[0].length][3];
-        imagePixelResult = new int[imagePixel.length][imagePixel[0].length][3];
-        int[][][] tempPixel = new int[imagePixel.length][imagePixel[0].length][3];
-        int[][][] meanFilter = new int[imagePixel.length][imagePixel[0].length][3];
-        int[][][] medianFilter = new int[imagePixel.length][imagePixel[0].length][3];
-        int[][][] sobel = new int[imagePixel.length][imagePixel[0].length][3];
-        final int[][][] split = new int[imagePixel.length][imagePixel[0].length][3];
-        int[][] label = null;
-        ArrayList<Integer> exist = new ArrayList<Integer>();
-        ArrayList<int[][][]> imageBlob = new ArrayList<int[][][]>();
-        ArrayList<int[][][]> imageGreyscale = new ArrayList<int[][][]>();
-        ArrayList<int[][][]> imageSobel = new ArrayList<int[][][]>();
-        tempPixel = imagePixel.clone();
-        
-        if (chkGreyscale.isSelected())
-        {
-            imagePixelCopy = ImageProcessing.greyScale(tempPixel);
-            //imagePixelCopy = tempPixel;
-            
-            int[][][] greyScalePixels = new int[imagePixelCopy.length][imagePixelCopy[0].length][3];
-            greyScalePixels = imagePixelCopy.clone();
-            
-            //intensityHistogram = ImageProcessing.intensityHistogram(greyScalePixels);
-            
-                       
-            btnShowHistogram.setVisible(true);
-        }
-        
-        if (chkMedianFilter.isSelected())
-        {
-            medianFilter = ImageProcessing.medianFilter(tempPixel);
-            imagePixelCopy = medianFilter;
-        }
-        
-        if (chkMeanFilter.isSelected())
-            if (chkMedianFilter.isSelected())
-            {
-                meanFilter = ImageProcessing.meanFilter(medianFilter);
-                imagePixelCopy = meanFilter;
-            }
-            else
-            {
-                meanFilter = ImageProcessing.meanFilter(imagePixelCopy);
-                imagePixelCopy = meanFilter;
-            }
-        
-        if (chkSobel.isSelected())
-        {
-            if ((chkMedianFilter.isSelected()) && (chkMeanFilter.isSelected()))
-                sobel = ImageProcessing.sobelEdgeDetection(meanFilter);
-            else if (chkMedianFilter.isSelected())
-                    sobel = ImageProcessing.sobelEdgeDetection(medianFilter);
-            else if (chkMeanFilter.isSelected())
-                    sobel = ImageProcessing.sobelEdgeDetection(meanFilter);
-            else
-                sobel = ImageProcessing.sobelEdgeDetection(tempPixel);
-            
-            imagePixelCopy = sobel;
-        }
-        
-        if (chkBlobbing.isSelected())
-        {           
-            label = FeatureExtraction.Blobbing(sobel);
-            ObjectClassification.LabelCounting(label, exist);
-            ObjectClassification.LabelElimination(label, exist);
-            
-            if (exist.size() > 13)
-                ObjectClassification.LabelElimination(label, exist);
-            
-            final int[][] label2 = new int[label.length][label[0].length];
-            
-            for (int i = 0 ; i < label.length ; i++)
-               for (int j = 0 ; j < label[0].length ; j++)
-                   label2[i][j] = label[i][j];
-            
-            lbl_list.setVisible(true);
-            lbl_list.setText("List of Region");
-            list_label.setVisible(true);
-            list_label_scroll.setVisible(true);
-            
-            for (int i = 0 ; i < exist.size() ; i++)
-               model.addElement(Integer.toString(exist.get(i)));
-            
-            if (!chkRegionSplitting.isSelected())
-            {
-               slider_red.setVisible(true);
-               slider_green.setVisible(true);
-               slider_blue.setVisible(true);
-               lbl_red_color.setVisible(true);
-               lbl_green_color.setVisible(true);
-               lbl_blue_color.setVisible(true);
-                
-               listener = new ListSelectionListener()
-               {
-                  public void valueChanged(ListSelectionEvent ev)
-                  {
-                     int option;
-                     Object[] list = ((JList)ev.getSource()).getSelectedValues();
-                     option = Integer.parseInt((String)list[0]);
-                  
-                     for (int i = 0 ; i < label2.length ; i++)
-                        for (int j = 0 ; j < label2[0].length ; j++)
-                           if (label2[i][j] == option)
-                           {
-                              split[i][j][0] = slider_red.getValue();
-                              split[i][j][1] = slider_green.getValue();
-                              split[i][j][2] = slider_blue.getValue();
-                           }
-                  
-                     imagePixelCopy = split;
-                     OutputImage(1);
-                  
-                   }
-               }; 
-                
-               list_label.addListSelectionListener(listener);              
-            }
-        }          
-        
-        if (chkRegionSplitting.isSelected())
-        {
-            ObjectClassification.ImageSplit(tempPixel, imagePixelCopy, label, exist, imageBlob, imageSobel, imageGreyscale);
-            model.removeAllElements();
-            
-            for (int i = 0 ; i < imageBlob.size() ; i++)
-                model.addElement(Integer.toString(i+1));
-            
-            cmb_image.setVisible(true);
-            
-            final ArrayList<int[][][]> image2 = new ArrayList<int[][][]>(imageSobel);
-            final ArrayList<int[][][]> image3 = new ArrayList<int[][][]>(imageBlob);
-            final ArrayList<int[][][]> image4 = new ArrayList<int[][][]>(imageGreyscale);
-            
-            if (!chkFeatureExtraction.isSelected())
-            {                
-               listener = new ListSelectionListener()
-               {
-               public void valueChanged(ListSelectionEvent ev)
-               {
-                     int option;
-                     Object[] list = ((JList)ev.getSource()).getSelectedValues();
-                     option = Integer.parseInt((String)list[0]);
-                  
-                     if (cmb_image.getSelectedIndex() == 0)
-                        imagePixelCopy = image3.get(option-1);
-                     else if (cmb_image.getSelectedIndex() == 1)
-                        imagePixelCopy = image4.get(option-1);
-                     else if (cmb_image.getSelectedIndex() == 2)
-                         imagePixelCopy = image2.get(option-1);
-                     
-                     OutputImage(2);
-                  
-               }
-               };
-                
-               list_label.addListSelectionListener(listener);
-            }
-            
-        }
-        
-        if (chkFeatureExtraction.isSelected())
-        {
-            ArrayList<String> name = new ArrayList<String>(); 
-            final ArrayList<String> identifiedName = new ArrayList<String>();
-            model.removeAllElements();
-            
-            /*New section to add image together*/            
-            model2.addElement("Result");
-            
-            for (int i = 0 ; i < imageSobel.size() ; i++)
-            {
-               String tempName;
-               tempName = ObjectClassification.ImageClassification(imageBlob, imageSobel, imageGreyscale, tempPixel.length, tempPixel[0].length, i);
-               name.add(tempName);
-               
-               if (!tempName.equals("Unidentified") && (!tempName.equals("")))
-                   identifiedName.add(tempName);
-            }
-            
-            for (int i = 0 ; i < identifiedName.size() ; i++)
-                output += identifiedName.get(i);
-            
-            for (int i = 0 ; i < name.size() ; i++)
-                model.addElement(name.get(i));
-            
-            for (int i = 0 ; i < name.size() ; i++)
-            {
-                if ((!name.get(i).equals("Unidentified")) && (!name.get(i).equals("")))
-                {
-                    imagePixelResult = imageGreyscale.get(i);
-                    if (resultImage == null)
-                    {
-                        try{
-                        String s = Paths.get(".").toAbsolutePath().normalize().toString() + "\\prev.png";
-                        ReadWritePNG.WritePNG(s, imagePixelResult);
-                        resultImage = ImageIO.read(new File(s));}
-                        catch(Exception e) {System.out.println("Error");}
-                    }
-                    else
-                       resultImage = test(resultImage);
-                }
-            }
-            
-            /*end of new section*/
-            
-            cmb_image.setVisible(true);
-            
-            final ArrayList<int[][][]> image2 = new ArrayList<int[][][]>(imageSobel);
-            final ArrayList<int[][][]> image3 = new ArrayList<int[][][]>(imageBlob);
-            final ArrayList<int[][][]> image4 = new ArrayList<int[][][]>(imageGreyscale);
-             
-            listener = new ListSelectionListener()
-            {
-               public void valueChanged(ListSelectionEvent ev)
-               {
-                  int option;
-                  option = ((JList)ev.getSource()).getSelectedIndex();
-                  
-                  if (cmb_image.getSelectedIndex() == 0)  
-                     imagePixelCopy = image3.get(option);
-                  else if (cmb_image.getSelectedIndex() == 1)
-                     imagePixelCopy = image4.get(option);
-                  else if (cmb_image.getSelectedIndex() == 2)
-                     imagePixelCopy = image2.get(option);
-                  
-                  
-                  OutputImage(2);
-                  
-                  //test();
-                  
-               }
-            };
-            
-            list_label.addListSelectionListener(listener);
-        }
-        
-        OutputImage(1);
-    }
-    
-    public BufferedImage test(BufferedImage temp)
-    {  
-        BufferedImage image = null;
-        
-        try{
-        //String s = Paths.get(".").toAbsolutePath().normalize().toString() + "\\prev3.png";
-        String s2 = Paths.get(".").toAbsolutePath().normalize().toString() + "\\prev2.png";
-        //ReadWritePNG.WritePNG(s, imagePixelResult);
-        ReadWritePNG.WritePNG(s2, imagePixelResult);
-        //Image rawOutputImage = ImageIO.read(new File(s));
-        Image rawOutputImage = (Image) temp;
-        Image rawOutputImage2 = ImageIO.read(new File(s2));
-        
-        Image outputImage = rawOutputImage.getScaledInstance(rawOutputImage.getWidth(this)*1, rawOutputImage.getHeight(this)*1,Image.SCALE_SMOOTH);
-        Image outputImage2 = rawOutputImage2.getScaledInstance(rawOutputImage2.getWidth(this)*1, rawOutputImage2.getHeight(this)*1,Image.SCALE_SMOOTH);
-        
-        int w = outputImage.getWidth(this) + outputImage2.getWidth(this);
-        int h = Math.max(outputImage.getHeight(this), outputImage2.getHeight(this));
-        image = new BufferedImage(w, h,  BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = image.createGraphics();
-        g2.drawImage(outputImage, 0, 0, null);
-        g2.drawImage(outputImage2, outputImage.getWidth(this), 0, null);
-        g2.dispose();
-
-        //ImageIcon newImg = new ImageIcon(image);
-
-        //img_src_output.setIcon(newImg);
-        }
-        
-        catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Terjadi kesalahan di dalam sistem, silahkan mencoba me-reload kembali gambar dan ulangi memproses !", "Error", JOptionPane.ERROR_MESSAGE );
-        }
-        
-        return image;
-    }
 }

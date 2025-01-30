@@ -3,6 +3,8 @@ package Controller;
 import View.*;
 import Utility.*;
 import Function.*;
+import java.awt.Color;
+import java.awt.Graphics;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -12,6 +14,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
 import javax.imageio.ImageIO;
+import javax.swing.Icon;
 import javax.swing.JOptionPane;
 
 import org.dcm4che3.data.Attributes;
@@ -25,6 +28,10 @@ import org.dcm4che3.io.*;
  */
 public class MainController{
 
+    /**
+     * Constant for the last technique performed.
+     * This is used as the list view in UI funcions depending on the technique performed.
+     */
     private final int MODE_NONE = 100;
     private final int MODE_BLOBBING = 101;
     private final int MODE_REGION_SPLIT = 102;
@@ -35,35 +42,16 @@ public class MainController{
     MainWindowGUI UI;
 
     int[][] blobbingResultDuplicate;
-    ArrayList<int[][][]> firstResult = new ArrayList<>(); //blob, 3
-    ArrayList<int[][][]> secondResult = new ArrayList<>(); //sobel , 2
-    ArrayList<int[][][]> thirdResult = new ArrayList<>(); //greyscale, 4
+    ArrayList<int[][][]> firstResult = new ArrayList<>();
+    ArrayList<int[][][]> secondResult = new ArrayList<>();
+    ArrayList<int[][][]> thirdResult = new ArrayList<>();
+    
+    String plateNumberOutput = "";
+    BufferedImage resultImage = null;
     
     public static void main(String[] args)
     {
-        new MainController();
-
-        try
-        {
-            String path = "C:\\users\\Leo\\Desktop\\0020.DCM";
-            InputStream stream = new FileInputStream(path);
-            DicomInputStream dicomStream = new DicomInputStream(stream);
-            Attributes attributes = dicomStream.readDataset();
-            
-            java.io.File f = new java.io.File(path);
-            javax.imageio.stream.ImageInputStream dicomImage = javax.imageio.ImageIO.createImageInputStream(f);
-            
-            Image img = ImageIO.read(dicomImage);
-            
-            System.out.println(attributes.getString(Tag.PatientName));
-            
-        }
-        catch(Exception e)
-        {
-            
-        }
-        
-        
+        new MainController();   
     }
     
     public MainController()
@@ -72,12 +60,63 @@ public class MainController{
         selectedOutputMode = MODE_NONE;
     }
         
+    public void resetVariableValue()
+    {
+        selectedOutputMode = MODE_NONE;
+        blobbingResultDuplicate = null;
+        firstResult = new ArrayList<>();
+        secondResult = new ArrayList<>();
+        thirdResult = new ArrayList<>();
+        plateNumberOutput = "";
+        resultImage = null;
+    }
+    
+    public void loadDICOMImage(String path)
+    {
+        BufferedImage img = ReadWritePNG.readDicomImageFile(path);
+        DicomImageViewer viewer = new DicomImageViewer();
+        viewer.populateImageInput(img);
+        viewer.setVisible(true);
+    }
+    
+    /**
+     * Function to read image file into pixels.
+     * Fired when user selected the image location.
+     * @param image 
+     */
     public void imageLoaded(File image)
     {
         imagePixels = ReadWritePNG.ReadPNG(image.toPath().toString());     
+        UI.populateInputImage(imagePixels);
     }    
 
-    public void listItemOnClick(String selectedItem)
+    /**
+     * Function to output the detected plate number.
+     * Can be called only if the core operations have been performed.
+     */
+    public void showRecognisedPlateNumber()
+    {
+        imagePixels = new int[resultImage.getWidth()][resultImage.getHeight()][3];
+        
+        for (int i = 0 ; i < resultImage.getHeight() ; i++)
+        {
+           for (int j = 0 ; j < resultImage.getWidth() ; j++)
+           {
+              Color pixel = new Color(resultImage.getRGB(j,i));
+              imagePixels[j][i][0] = pixel.getRed();
+              imagePixels[j][i][1] = pixel.getGreen();
+              imagePixels[j][i][2] = pixel.getBlue();
+           }
+        }
+        
+        ArrayList<String> newOutput = new ArrayList();
+        newOutput.add(plateNumberOutput);
+        
+        UI.populateOutputImage(imagePixels, true);
+        UI.showList(newOutput);
+    }
+    
+    public void listItemOnClick(String selectedItem, int selectedIndex)
     {
         /**
          * Depending on which item:
@@ -98,6 +137,10 @@ public class MainController{
                 height = blobbingResultDuplicate[0].length;
                 outputImage = new int[width][height][3];
 
+                /**
+                 * Iterating each pixel of the blobbed object of the given label
+                 * and changing the colour of it to be populated as an output image.
+                 */
                 for (int i = 0 ; i < width ; i++)
                     for (int j = 0 ; j < height ; j++)
                         if (blobbingResultDuplicate[i][j] == Integer.parseInt(selectedItem))
@@ -107,78 +150,116 @@ public class MainController{
                             outputImage[i][j][2] = sliderValue[2];
                         }
 
-                UI.populateOutputImage(outputImage);
+                UI.populateOutputImage(outputImage, true);
                 break;
             case MODE_REGION_SPLIT:
                 cmbImageSelectedIndex = UI.getComboBoxSelectedItemPosition();
                 outputImage = new int[0][0][0];
 
+                /**
+                 * 0 -> Blobbed Image
+                 * 1 -> Greyscaled Image
+                 * 2 -> Sobel Edge Detection Image
+                 */
                 switch (cmbImageSelectedIndex)
                 {
                     case 0:
-                        outputImage = firstResult.get(cmbImageSelectedIndex - 1);
+                        outputImage = firstResult.get(Integer.parseInt(selectedItem) - 1);
                         break;
                     case 1:
-                        outputImage = thirdResult.get(cmbImageSelectedIndex - 1);
+                        outputImage = thirdResult.get(Integer.parseInt(selectedItem) - 1);
                         break;
                     case 2:
-                        outputImage = secondResult.get(cmbImageSelectedIndex - 1);
+                        outputImage = secondResult.get(Integer.parseInt(selectedItem) - 1);
                         break;
                 }
 
-                //OutputImage(2);
+                UI.populateOutputImage(outputImage, false);
                 break;
             case MODE_OBJECT_CLASSIFICATION:
                 cmbImageSelectedIndex = UI.getComboBoxSelectedItemPosition();
                 outputImage = new int[0][0][0];
 
+                /**
+                 * 0 -> Blobbed Image
+                 * 1 -> Greyscaled Image
+                 * 2 -> Sobel Edge Detection Image
+                 */
                 switch (cmbImageSelectedIndex)
                 {
                     case 0:
-                        outputImage = firstResult.get(cmbImageSelectedIndex);
+                        outputImage = firstResult.get(selectedIndex);
                         break;
                     case 1:
-                        outputImage = thirdResult.get(cmbImageSelectedIndex);
+                        outputImage = thirdResult.get(selectedIndex);
                         break;
                     case 2:
-                        outputImage = secondResult.get(cmbImageSelectedIndex);
+                        outputImage = secondResult.get(selectedIndex);
                         break;
                 }
 
-                //OutputImage(2);
+                UI.populateOutputImage(outputImage, false);
                 break;
 
         }
     }
 
-    public void imageProcessing()
+    /**
+     * Performing the image processing technique depending on the selected process by users.
+     * Some technique has pre-requisite.
+     * @param isGrayScale
+     * @param isMeanFilter
+     * @param isMedianFilter
+     * @param isSobelEdgeDetection
+     * @param isBlobbing
+     * @param isRegionSplitting
+     * @param isFeatureExtraction 
+     */
+    public void performImageProcessing(boolean isGrayScale, 
+                                        boolean isMeanFilter,
+                                        boolean isMedianFilter,
+                                        boolean isSobelEdgeDetection,
+                                        boolean isBlobbing,
+                                        boolean isRegionSplitting,
+                                        boolean isFeatureExtraction)
     {
-        //GreyScale
-        int[][][] resultPixel = ImageProcessing.greyScale(imagePixels);
+        resetVariableValue();
         
-        //Median Filter
-        resultPixel = ImageProcessing.medianFilter(resultPixel);
-        
-        //Mean Filter
-        resultPixel = ImageProcessing.meanFilter(resultPixel);
-        
-        //Sobel Detection Filter
-        resultPixel = ImageProcessing.sobelEdgeDetection(resultPixel);
-        
-        
-        
-        //UI.populateOutputImage(resultPixel);
+        if (isGrayScale)
+        {
+            int[][][] resultPixel = ImageProcessing.greyScale(imagePixels);
+            
+            if (isMeanFilter)
+                resultPixel = ImageProcessing.meanFilter(resultPixel);
+            
+            if (isMedianFilter)
+                resultPixel = ImageProcessing.medianFilter(resultPixel);
+            
+            if (isSobelEdgeDetection)
+            {
+                resultPixel = ImageProcessing.sobelEdgeDetection(resultPixel);
+                
+                if (isBlobbing)
+                {
+                    ArrayList<Integer> registeredObjects = new ArrayList<>();
+                    int[][] blobbingResult = blobbing(resultPixel, registeredObjects);
+
+                    if (isRegionSplitting)
+                    {
+                        regionSplitting(resultPixel, blobbingResult, registeredObjects, firstResult, secondResult, thirdResult);
+                        
+                        if (isFeatureExtraction)
+                        {
+                            objectClassification(firstResult, secondResult, thirdResult);
+                        }
+                    }
+                }
+            }   
+            
+            UI.populateOutputImage(resultPixel, true);
+        }
     }
-
-    public void featureExtraction(int[][][] sobelPixels)
-    {
-        ArrayList<Integer> registeredObjects = new ArrayList<>();
-        int[][] blobbingResult = blobbing(sobelPixels, registeredObjects);
-
-        regionSplitting(sobelPixels, blobbingResult, registeredObjects, firstResult, secondResult, thirdResult);
-        objectClassification(firstResult, secondResult, thirdResult);
-    }
-
+    
     int[][] blobbing(int[][][] sobelPixels, ArrayList<Integer> registeredObjects)
     {
         ArrayList<String> registeredObjectsString = new ArrayList<>();
@@ -197,12 +278,12 @@ public class MainController{
                blobbingResultDuplicate[i][j] = blobbingResult[i][j];
 
         for (int i = 0 ; i < registeredObjects.size() ; i++)
-            registeredObjectsString.add(registeredObjects.get(i).toString());
-
-        selectedOutputMode = MODE_BLOBBING;
+            registeredObjectsString.add(Integer.toString(registeredObjects.get(i)));
 
         UI.showList(registeredObjectsString);
         UI.showSlider(true);
+        
+        selectedOutputMode = MODE_BLOBBING;
 
         return blobbingResult;
     }
@@ -230,11 +311,11 @@ public class MainController{
 
         UI.showList(listItem);
         UI.showComboBox(cmbOptions);
+        selectedOutputMode = MODE_REGION_SPLIT;
     }
     
     void objectClassification(ArrayList<int[][][]> firstResult, ArrayList<int[][][]> secondResult, ArrayList<int[][][]> thirdResult)
     {
-        String outputResult = "";
         ArrayList<String> listItem = new ArrayList<>();
         ArrayList<String> name = new ArrayList<String>();
         final ArrayList<String> identifiedName = new ArrayList<String>();
@@ -252,13 +333,13 @@ public class MainController{
         }
 
         for (int i = 0 ; i < identifiedName.size() ; i++)
-            outputResult += identifiedName.get(i);
+            plateNumberOutput += identifiedName.get(i);
 
         for (int i = 0 ; i < name.size() ; i++)
             listItem.add(name.get(i));
 
 
-        BufferedImage resultImage = null;
+        
         for (int i = 0 ; i < name.size() ; i++)
         {
             if ((!name.get(i).equals("Unidentified")) && (!name.get(i).equals("")))
@@ -285,6 +366,8 @@ public class MainController{
         UI.showList(listItem);
         UI.showComboBox(cmbOptions);
 
+        selectedOutputMode = MODE_OBJECT_CLASSIFICATION;
+        
     }
 
     BufferedImage combineImage(BufferedImage temp, int[][][] pixelsToBeWritten)
@@ -307,9 +390,6 @@ public class MainController{
             g2.drawImage(outputImage, 0, 0, null);
             g2.drawImage(outputImage2, outputImage.getWidth(UI), 0, null);
             g2.dispose();
-
-            //ImageIcon newImg = new ImageIcon(image);
-            //img_src_output.setIcon(newImg);
         }
 
         catch (Exception e) {
@@ -317,5 +397,52 @@ public class MainController{
         }
 
         return image;
+    }
+    
+    public void WriteImage(File Location, Icon icon)
+    {
+        try
+        {
+            /**
+             * Icon to buffered image copied from: https://stackoverflow.com/questions/15053214/converting-an-imageicon-to-a-bufferedimage
+             * Credit to: https://stackoverflow.com/users/462963/werner-kvalem-vester%c3%a5s
+             */
+            BufferedImage bi = new BufferedImage(
+                                    icon.getIconWidth(),
+                                    icon.getIconHeight(),
+                                    BufferedImage.TYPE_INT_RGB);
+            Graphics g = bi.createGraphics();
+                                // paint the Icon to the BufferedImage.
+                                icon.paintIcon(null, g, 0,0);
+                                g.dispose();
+         
+            int[][][] imagePixels = new int[bi.getWidth()][bi.getHeight()][3];
+
+            /*Going through the image stream to extract the Pixel and split it to RGB*/
+            for (int i = 0 ; i < bi.getHeight() ; i++)
+            {
+               for (int j = 0 ; j < bi.getWidth() ; j++)
+               {
+                  Color PixelColor = new Color(bi.getRGB(j,i));
+                  imagePixels[j][i][0] = PixelColor.getRed();
+                  imagePixels[j][i][1] = PixelColor.getGreen();
+                  imagePixels[j][i][2] = PixelColor.getBlue();
+               }
+            }
+            
+            
+           ReadWritePNG.WritePNG(Location.toPath().toString()+".png", imagePixels);
+        }
+        catch (Exception e)
+        {
+        }
+    }
+    
+    public boolean isImageLoaded()
+    {
+        if (imagePixels == null)
+            return false;
+        else
+            return true;
     }
 }

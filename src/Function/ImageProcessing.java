@@ -204,7 +204,7 @@ public class ImageProcessing
             for (int j = 0 ; j < height ; j++)
             {
                 int value = 0;
-                if (resultPixel[i][j][0] < 230)
+                if (resultPixel[i][j][0] < thresholdValue)
                     value = 0;
                 else
                     value = 255;

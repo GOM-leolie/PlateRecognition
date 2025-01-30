@@ -780,7 +780,13 @@ public class ObjectClassification {
       return PixelArea;
    }
 
-   public static void ImageSplit(int[][][]ImagePixel, int[][][]ImagePixel2, int[][] ImageLabel, ArrayList<Integer> ValidLabel, ArrayList<int[][][]> SplitImage, ArrayList<int[][][]> SplitImageHalf, ArrayList<int[][][]> SplitImageFull)
+   public static void ImageSplit(int[][][]ImagePixel, 
+                                int[][][]ImagePixel2, 
+                                int[][] ImageLabel, 
+                                ArrayList<Integer> ValidLabel, 
+                                ArrayList<int[][][]> SplitImage, 
+                                ArrayList<int[][][]> SplitImageHalf, 
+                                ArrayList<int[][][]> SplitImageFull)
    {
       int SmallestWidth;
       int SmallestHeight;
