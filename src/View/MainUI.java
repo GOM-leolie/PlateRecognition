@@ -9,6 +9,7 @@ import java.awt.Image;
 import java.awt.event.*;
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -19,12 +20,12 @@ import javax.swing.*;
  */
 public class MainUI extends javax.swing.JFrame {
 
-    IController controller;
+    MainController controller;
     
     /**
      * Creates new form MainUI
      */
-    public MainUI(IController newController) {
+    public MainUI(MainController newController) {
         initComponents();
         controller = newController;
         
@@ -101,7 +102,7 @@ public class MainUI extends javax.swing.JFrame {
      */
     void populateProcessingOptions()
     {
-        List<String> operations = controller.getOperationList();
+        ArrayList<String> operations = new ArrayList<String>();
         
         JLabel jLblOperationTitle = new JLabel("Choose Operations");
         jLblOperationTitle.setSize(200, 20);

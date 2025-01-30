@@ -3,9 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Leo/Documents/Personal%20Projects/_Project/Java/PlatRecognition/src/Function/ObjectClassification.java</file>
             <file>file:/C:/Users/Leo/Documents/Personal%20Projects/_Project/Java/PlatRecognition/src/View/MainWindowGUI.java</file>
-            <file>file:/C:/Users/Leo/Documents/Personal%20Projects/_Project/Java/PlatRecognition/src/Function/FeatureExtraction.java</file>
+            <file>file:/C:/Users/Leo/Documents/Personal%20Projects/_Project/Java/PlatRecognition/src/Controller/MainController.java</file>
             <file>file:/C:/Users/Leo/Documents/Personal%20Projects/_Project/Java/PlatRecognition/src/Function/ImageProcessing.java</file>
         </group>
     </open-files>

@@ -780,7 +780,13 @@ public class ObjectClassification {
       return PixelArea;
    }
 
-   public static void ImageSplit(int[][][]ImagePixel, int[][][]ImagePixel2, int[][] ImageLabel, ArrayList<Integer> ValidLabel, ArrayList<int[][][]> SplitImage, ArrayList<int[][][]> SplitImageHalf, ArrayList<int[][][]> SplitImageFull)
+   public static void ImageSplit(int[][][]ImagePixel, 
+                                int[][][]ImagePixel2, 
+                                int[][] ImageLabel, 
+                                ArrayList<Integer> ValidLabel, 
+                                ArrayList<int[][][]> SplitImage, 
+                                ArrayList<int[][][]> SplitImageHalf, 
+                                ArrayList<int[][][]> SplitImageFull)
    {
       int SmallestWidth;
       int SmallestHeight;
@@ -793,6 +799,7 @@ public class ObjectClassification {
       LargestHeight = 0;
 
       /*Mensplit gambar sesuai label, menghasilkan gambar yang telah displit*/
+       /*Separating the image based on the labelling.*/
       for (int i = 0 ; i < ValidLabel.size() ; i++)
       {
          for (int j = 0 ; j < ImageLabel.length ; j++)
